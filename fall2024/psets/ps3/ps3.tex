@@ -5,13 +5,13 @@
 
 \psHeader{3}{Wed Oct. 2, 2024 (11:59pm)}
 
-\textbf{Your name: }
+\textbf{Your name: Nemeira Lal}
 
-\textbf{Collaborators: }
+\textbf{Collaborators: Faseeh, Pranav}
 
-\textbf{No. of late days used on previous psets: }
+\textbf{No. of late days used on previous psets: 1}
 
-\textbf{No. of late days used after including this pset: }
+\textbf{No. of late days used after including this pset: 3}
 
 
 The purpose of this problem set is to solidify your understanding of the RAM model (and variants), and the relations between the RAM model, the Word-RAM model, Python programs, and variants. In particular, you will build skills in simulating one computational model by another and in evaluating the runtime of the simulations (both in theory and in practice).
@@ -83,9 +83,33 @@ $M[\outputpointer]=\result$\;
 \begin{enumerate}
     \item Exactly calculate (without asymptotic notation) the RAM-model running times of the above algorithms as a function of $N$.
     Which one is faster? \label{itm:RAMtime}    
-    \item Using your RAM Simulator, run both RAM programs on inputs $N=0,1,2,\ldots,15$ and graph the actual running times (in clock time, not RAM steps).  (We have provided you with some timing and graphing code in the Github repository.) Which one is faster?  \label{itm:realtime}  
+    \\\\
+    The runtime of the first algorithm can be broken down into assignment operations, arithmetic computations, and comparisons. First, there are 8 assignment operations: 7 from lines 0 to 6 and 1 final assignment on line 12. Each happens only once, adding a fixed cost. 
+    \\ Then on line 11, there is a single arithmetic operation (multiplying result by 13), that occurs only once.
+    \\ The lines 7 to 10 have a loop that runs N times, and during each iteration:
+    \begin{itemize}
+        \item 2 arithmetic operations: squaring result (line 8) and decrementing counter (line 9)
+        \item 2 comparisons: checking counter == 0 (line 7) and zero == 0 (line 10)
+    \end{itemize}
+    And so, each iteration involves 4 basic operations and runs N times, so adds $4N$ operations.
+    \\ Combining all steps, the total run time we get is: $4N + 9$
+    \\\\ The runtime of the second algorithm can be broken down into assignment operations, arithmetic computations, and comparisons as well! 
+    \\ First, there are 8 one-time operations that initialize all variables from lines 0 to 7. These occur once, and add a fixed runtime to the overall runtime.
+    \\ The loop runs N here as well, but the operations in each of the loops are:
+    \begin{itemize}
+        \item 5 arithmetic computations: from lines 9 to 13
+        \item 2 comparison operations: on lines 8 and 14
+    \end{itemize}
+    Thus, the loop involves 7N operations. Then, after the loop, there are 4 more one-time arithmetic computations from lines 15 to 18, which also happen once. And lastly, there is one assignment operation in the last line.
+    \\ Combining these, we get our runtime to be: $7N + 13$.
+    \item Using your RAM Simulator, run both RAM programs on inputs $N=0,1,2,\ldots,15$ and graph the actual running times (in clock time, not RAM steps).  (We have provided you with some timing and graphing code in the Github repository.) Which one is faster?  \label{itm:realtime} 
+
+    \includegraphics[scale = 0.5]{fall2024/psets/ps3/GraphCS120PS3.jpg}
     
     \item Explain the discrepancies you see between Parts~\ref{itm:RAMtime} and \ref{itm:realtime}.  (Hint: What do we know about the relationship between the RAM and Word-RAM models, and why is it relevant to how efficiently the Python simulation runs?) 
+    \\\\ In part a, we said that both the algorithms run at linear runtime as the input size increases. However, in part b we can clearly see that Program 1 does not run linearly as input increases.
+    \\ As for Program 2, the result is always reduced by a $\mod 2^{32}$ operation at each step, making sure that the output always stays fixed within a 32-bit range. Although we modeled it with the RAM model, this still fits the Word-RAM Model that Python actually runs on, where each word is of fixed size (32 or 64 bits), allowing arithmetic operations to be performed in $O(1)$ time. So, the runtime remains linear as expected.
+    \\ But, Program 2 operates under the theoretical RAM model, which doesn't restrict the size of words. In reality, it lacks the modulus operation, and so the output grows exponentially with $N$. As $N$ increases, the result can exceep $2^{32}$, requiring multiple memory locations to store the value. If the output occupies $m = \frac{N}{32}$ with the ceiling function applied, meaning each arithmetic operation will take $O(m^2)$ time, significantly increasing runtime. So, the RAM model assumes constant-time operations, and the exponential growth of the output means that Program 1's actual runtime scales much worse than Program 2's as N grows larger. 
     
     \item (optional\footnote{This problem won't make a difference between N, L, R-, and R grades.}) Give a theoretical explanation of the shapes of the runtime curves you see in Part~\ref{itm:realtime}, by providing explicit formulas for the asymptotic runtimes of the two programs (in clock time). You may need to do some research online and/or make guesses about how Python operations are implemented to come up with your estimates. 
 
@@ -100,11 +124,43 @@ $M[\outputpointer]=\result$\;
        $$\Time_{P'}(x) = O\left(\Time_{P[w]}(x)+n+w\right),$$
 where $n$ is the length of $x$.
 
-(This was stated without proof in Lecture Notes 8.) 
-
+(This was stated without proof in Lecture Notes 8.) \\
 \end{enumerate}
+To prove that for every Word-RAM program P, there exists a corresponding RAM program P' that simulates P while satisfying all conditions, we need to show how a RAM program handles all Word-RAM operations, including intialization, arithmetic, and other processes.
+\begin{itemize}
+    \item Initialization
+    \\\\ Word-RAM is different from RAM in the way that it has a fixed word length $w$ and a memory size $S$, which is initially equal to $n$- the input array x's length. On the other hand, RAM has no fixed word length of memory limit, and is theoretical. Therefore, P' simulates this by calculating $S$ and $w$ from $x$, where $x$ is stored in memory locations $M[0],....,M[n-1]$, with all other locations being set to 0.
+    \begin{itemize}
+        \item Input Size Calculation: We iterate through the memory to determine the size $n$ of $x$, incrementing a counter until a memory location with value 0 is reached
+        \item Word Length Calculation: Calculate $2^w$ by either exponentiation by squaring or by multiplying 2 by itself $w$ times.
+    \end{itemize}
+    If $S > 2^w$ or any element in $x$ exceeds $2^w-1$, the program crashes. This is how we uphold the Word-RAM model as for initialization.
 
-Your proof should use an {\em implementation-level} description, similar to the proof that RAM programs can be simulated by ones with at most $c$ registers in Lecture 7.  Recall that Word-RAM programs have a finite but changing memory size $S$ and a read-only variable $\wordlen$; you may want to start your simulation by calculating $S$ and $2^{\wordlen}$.  Then think about how each operation of a Word-RAM program $P$ can be simulated in a RAM program $P'$, taking care of any differences between their semantics in the Word-RAM model vs. the RAM model. Don't forget MALLOC!
+    \item Operations
+    \begin{itemize}
+        \item Arithmetic (Addition, Multiplication): These operations are performed similar in RAM as they are in WOrd-RAM. However, the result must be checked to ensure that it is with the bounds (less than $2^w$). If the result exceeds $2^w$, we cap it at $2^w-1$.
+        \item Subtraction and Division: These operations are unchanged between RAM and Word-RAM
+        \item Memory Access (read/write): RAM simulates Word-RAM memory by ensuring that memory accesses do not exceed $2^w$. If an address is out of bounds, the program crashes.
+        \item MALLOC: In Word-RAM, the MALLOC operation increases S by 1. In RAM, this is simulated by incrementing the input length. But, again, if $S > 2^w$, the program crashes.
+        \item GOTO: GOTO operations are performed similarly in both models, though line numbers may change slightly due to additional checks in RAM.
+        
+    \end{itemize}
+    \item Output and Crashing
+    \\\\ The program crashes if any memory address or value exceeds $2^w-1$, or if $S \geq 2^w$. This is simulated in RAM by halting the program with $output-ptr = 0$ and $output-len = 0$. If no crash occurs, both programs halt with the same output.
+    \item Runtime
+    \\\\ The total runtime of $P'$ can be analyzed by considering three components:
+    \begin{itemize}
+        \item $O(n)$: Looping through the input array to determine its size takes $O(n)$, where $n$ is the length of $x$
+        \item $O(w)$: Calculating $2^w$ in the iniatilization phase takes $O(w)$ steps.
+        \item $T_{P[w]}(x)$: The runtime of the Word-RAM program is a subset of the RAM program's runtime, since all operations in RAM simulate those of Word-RAM with some constant overhead for boundary checks. 
+    \end{itemize}
+    So, the overall runtime of the RAM program is:
+    \begin{equation*}
+        T_{P'}(x) = O(T_{P[w]}(x) + n + w)
+    \end{equation*}
+    \item Conclusion
+    \\\\ We have shown that the RAM program $P'(x,w)$ simulates the Word-RAM program $P[w](x)$ while preserving all operations and conditions, including handling memory, arithmetic, and crashes. The runtime of $P'$ is $(T_{P[w]}(x) + n + w)$, satisfying the conditions outlined. 
+\end{itemize}
 
 \item (reflection) Discuss the value (or lack thereof) that you think computational models, and the RAM and Word-RAM models in particular, have for computer science.  All opinions are valid, as long as they show serious thought and are backed by specific justifications.
 
