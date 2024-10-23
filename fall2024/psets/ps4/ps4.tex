@@ -6,18 +6,18 @@
 % To include a problems set header, use the psHeader command
 \psHeader{4}{Wed Oct. 9, 2024 (11:59pm)}
 
-\textbf{Your name: }
+\textbf{Your name: Nemeira Lal }
 
 \textbf{Collaborators: }
 
-\textbf{No. of late days used on previous psets: }
+\textbf{No. of late days used on previous psets: 4}
 
-\textbf{No. of late days used after including this pset: }
+\textbf{No. of late days used after including this pset: 6}
 
 \begin{enumerate}
     \item (Randomized Algorithms in Practice)  
     \begin{enumerate}
-        \item Implement Randomized QuickSelect, filling in the template we have given you in the Github repository.
+        \item Coded.
         
         \item 
         In the repository, we have given you datasets $x_n$ of key-value pairs of varying sizes to experiment with: dataset $x_n$ is of size $n$.  For each dataset $x_n$ and any given number $k$, we will consider how to efficiently answer the $k$ selection queries
@@ -30,8 +30,15 @@
         Specifically, you will compare the {\em distribution} of runtimes of the two approaches for a given pair $(n,k)$ by running each approach many times and creating density plots of the runtimes.  The runtimes will vary because \QuickSelect{}  is randomized, and because of variance in the execution environment (e.g. other processes that are running on your computer during each execution). \vspace{1.5mm}
         
         We have provided you with the code for plotting. Before plotting, you will need to implement \MergeSortSelect{}, which extends \MergeSort{} to answer $k$ queries. Your goal is to use these experiments and the resulting density plots to propose a value for $k$, denoted $k^*(n)$, at which you should switch over from \QuickSelect{} to \MergeSortSelect{} for each given value of $n$ (you can choose any reasonable statistical feature to propose $k^*(n)$, such as the peak runtime of the distribution or the mean runtime, etc). Do this by experimenting with the parameters for $k$ (code is included to generate the appropriate queries once the $k$'s are provided) and generate a plot for each experiment.  Explain the rationale behind your choices, and submit a few density plots for each value of $n$ to support your reasoning.  (There is not one right answer, and it may depend on your particular implementation of \QuickSelect{}.) 
-        
+
+        \includegraphics[scale = 0.15]{fall2024/psets/ps4/Image 11-10-24 at 11.16 PM.jpg}
+        \\ As you can see, the optimal k values are somewhere between 20-30 for each of the n. With these k values, there is a difference between the runtimes of the two sorts.
         \item Extrapolate to come up with a simple functional form for $k^*(n)$, e.g. something like $k^*(n)=3\sqrt{n}+6$ or $k^*(n)=10\log^2 n$. (Again there is not one right answer.)  Briefly discuss how your extrapolation aligns with theoretical values. That is, what kind of functional form for $k^*(n)$ (in asymptotic notation) would be predicted by  the asymptotic runtimes of \QuickSelect{} and \MergeSortSelect{} for answering $k$ selection queries on a dataset of size $n$? 
+        \\ From the values we got, we can determine $$k^*(n) = 1 + 2\lceil log_2n \rceil$$
+        Applying this to runtimes, we get the runtime of the two functions \MergeSort{} and \QuickSelect{} to be the same when we set them to each other and get:
+        $$O(kn) = O(nlog_2(n) + k)$$
+        We get k to be:
+        $$\frac{cn}{n-1}log_2(n)$$ which is similar to what we got for $k^*(n)$.\\
         
         \item (*optional)  One way to improve \QuickSelect{} is to choose a pivot more carefully than by picking a uniformly random element from the array. A possible approach is to use the \textit{\textbf{median-of-3}} method: choose the pivot as the median of a set of 3 elements randomly selected from the array. Add \MedianQuickSelect{} to the experimental comparisons you performed above and interpret the results.  That is, in what way (if any) does \MedianQuickSelect{} offer benefits over \QuickSelect{}?        
         
@@ -46,8 +53,33 @@
 {A duplicate element; that is, a number $a$ such that there exist $i \neq j$ such that $a_i = a_j = a$.}
 \begin{enumerate}
     \item Show that DuplicateSearch can be solved by a Las Vegas algorithm with expected runtime $O(n)$ using a dictionary data structure.  (You should prove correctness and analyze runtime quoting the expected runtimes stated for the Dictionary data structure in Lecture 9, but you do not need to do a formal probability calculation using expectations.)  
+    \begin{itemize}
+        \item \textbf{Algorithm}: 
+        \begin{itemize}
+            \item We first begin with initializing a hast table with size $m$. Let's call the hash table $h$. We set the size of $h$ to $m = kn$, where k is a large natural number.
+            \item Then, for each element in the array $a_j$, we will do the following steps:
+            \\ - Check to see that the element $a_j$ is in the hash table $h$ or not
+            \\ - In the case that it is not in the hash table, we insert the element $a_i$ into the hash table $h$
+            \\ - In case that it is present in the hash table, we output the duplicate element $a_i$, and then we end the program
+        \end{itemize}
 
+        \item \textbf{Correctness}:
+        \begin{itemize}
+            \item This algorithm guarantees finding a duplicate if one exists because it processes each element one by one and then checks it with the elements already inserted into the hash table. For each element \( a_i \), the algorithm does a search in the hash table. If \( a_i \) is found, we know it is indeed a duplicate, and the algorithm terminates- while returning the duplicate element. If it isn't found, the element's added to the hash table, and the process continues with the next element.
+            \\ The use of a hash table makes sure that efficient lookups and insertions happen approdimately in \( O(1) \) expected time, assuming the hash function distributes elements uniformly and the table size is sufficiently large to avoid collisions! This makes the algorithm very efficient.
+            \\The algorithm maintains the Las Vegas property because it always returns the correct result (which is just finding a duplicate if one exists). However, its runtime may vary due to the underlying dictionary operations, which depend on the performance of the hash table. 
+            \\This 'adherence' to the Las Vegas principle ensures that while the runtime may vary, the accuracy of the result never does.
+        \end{itemize}
+        \item \textbf{Runtime}: 
+        \begin{itemize}
+            \item Preprocess: This is simply just initializing the hash table, which has m elements: $O(m) = O(kn) = O(n)$
+            \item Search: We add a search query for each element in a: $O(n)$
+            \item Insert: We may insert for each element in a: $O(n)$
+            \item Total runtime: $O(n) + O(n) + O(n) = O(n)$
+        \end{itemize}
+    \end{itemize}
     \item DuplicateSearch can be solved by a deterministic algorithm in runtime $O(n\log n)$. Briefly describe this algorithm in 2-3 sentences (you do not need to write a pseudocode and do not need to provide a proof of correctness).
+    \\\\ To make our runtime go from $O(n)$ to $O(nlogn)$, we can simply apply a merge sort to our array a. Now, instead of using the hash table, we can just compare the array within itself. For each $a_i$ in $a$, we can compare it with $a_{i+1}$ until we reach the end of the array. In this way, if a duplicate exists, they would definitely be next to each other because of the sort. Then, upon finding the duplicate, we can just terminate the program. So the algorithm has a runtime of $O(nlogn)$ for the merge sort and $O(n)$ for iterating through the array to compare. Total runtime: $O(nlogn)$
 
 \end{enumerate}    
     
@@ -76,12 +108,32 @@
 Every ten years as part of the Decennial Census, the Bureau collects a fresh list of $(\id,\bday)$ pairs from the entire US population.
 (It does not reuse data from the previous Decennial Census, so everyone is re-surveyed.)
 In order to incentivize participation, the Bureau promises to tell every respondent their age-ranking in the population after the survey is done (e.g. ``you are the 796,421'th oldest person among those who responded to the Census'').
-
+\\
+\begin{itemize}
+    \item Model: \textbf{Sorting and storing the sorted dataset}
+    \item Explanation: Sorting the dataset in $O(nlogn)$ time allows for quick constant-time queries because we can easily map each index to its corresponding person's age rank.
+    \item Approach: We can first sort the (id, bday) pairs using MergeSort. Then, we can iterate through the sorted list and tell each respondent their rank based on their position in the array. We return $(index + 1)$ for their rank, and that is based on the iteration only.
+    \item Runtime: $O(nlogn)$ for sorting, and then updating for each respondent takes $O(n)$. So, the total runtime is $O(nlogn)$.\\
+\end{itemize}
 \item (Daily Quartiles)
 After each day, the Bureau obtains a list of $(\id,\bday)$ pairs to add to or remove from its database due to births, deaths, and immigration, and publishes an updated 25th, 50th, and 75th percentile of the population ages.
+\\
+\begin{itemize}
+    \item Model: \textbf{Storing in a balanced and augmented binary search tree}
+    \item Explanation: A size-augmented BST allows for the most efficient insertion, alongside the already efficient queries, with both operations only taking $O(logn)$ time.
+    \item Approach: First, we insert the (id, bday) pairs into the BST by iterating through the list of new pairs to add. Then, we query the 25th, 50th, and 75th percentiles by accessing the corresponding indices (0.25n, 0.5n, 0.75n rounded), and then convert those birthdates to ages.
+    \item Inseting x elements takes $O(xlogn)$ for going through the inserting elements and then to insert them into the tree. The percentile queries take $O(logn)$ to query, and so, the total runtime is $O((x+s)logn)$, where s = 3 for the three search queries we perform for the 3 percentiles.\\
+\end{itemize}
 
 \item (Age Lookups)
 For privacy reasons, the Bureau decides to not publish any statistics on the population ages, but just wants to maintain a database where the age of any member of the population can be looked up quickly, and the database can be quickly updated daily according to births, deaths, and immigration.
+\\
+\begin{itemize}
+    \item Model: \textbf{Storing in a hash table}
+    \item Explanation: Using a hash table will allow us to have constant-time insertions and lookups, especially because we need to quickly store and check data ages of a person.
+    \item Approach: We can store each (id, bday) pair in a hash table with the id as the key and the birthday as the value. When we change/add/delete the birthday, we just use the existing key
+    \item Runtime: Insertions and lookups both take $O(1)$ time, leading to an overall $O(u+s)$ time for $u$ updates and $s$ queries.
+\end{itemize}
  \end{enumerate}
 
  \item (Reflection) Skim the course material from the beginning of the course through Lecture 9 (i.e. the scope of the upcoming class midterm).  Identify one concept or skill that you would like to study or practice in greater depth, and discuss why.  It can be because you feel that you haven't fully understood or internalized it, or because you found it interesting and are curious to learn more, or any other motivation you have. 
